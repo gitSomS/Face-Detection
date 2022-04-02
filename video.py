@@ -9,8 +9,7 @@ import pickle
 import time  #teste reduzir fps vídeo
 import numpy as np
 import sys
-import database
-
+import database as db
 #====================================== DEFINES =====================================#
 
 KNOWN_FACES_DIR = "cctv_rostos" #pasta com os ID's 
@@ -130,6 +129,10 @@ while True:
         if True in results:
             match = know_names[results.index(True)]
             print(f"Pessoa ID: {match}")
+
+            if db.matchExist(match) != 1:
+                db.insertMatch(match)
+
         else: # new id
             match = str(next_id)
             next_id += 1
