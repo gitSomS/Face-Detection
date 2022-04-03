@@ -3,8 +3,8 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY, nome TEXT, apelido TEXT, pontos INTEGER, crime TEXT, face BLOB)")
-    cur.execute("CREATE TABLE IF NOT EXISTs cctvmatch (id INTEGER PRIMARY KEY AUTOINCREMENT, id_match INTEGER)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, apelido TEXT, pontos INTEGER, crime TEXT, id_match INTEGER, face BLOB)")
+    #cur.execute("CREATE TABLE IF NOT EXISTs cctvmatch (id INTEGER PRIMARY KEY AUTOINCREMENT, id_match INTEGER)")
     conn.commit()
     conn.close()
     
@@ -19,17 +19,18 @@ def insert(nome,apelido,pontos,crime):
 def matchExist(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    response = cur.execute("SELECT EXISTS(SELECT id FROM cctvmatch WHERE id_match=?)", (id_match, ))
+    response = cur.execute("SELECT EXISTS(SELECT id FROM cctv WHERE id_match=?)", (id_match, ))
     fetched = response.fetchone()[0]
     # if fetched == 1:
     #     print("sim")
     # else:
     #     print("nao")
     return fetched
+
 def insertMatch(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("INSERT INTO cctvmatch(id_match) VALUES(?)",(id_match, ))
+    cur.execute("INSERT INTO cctv(id_match) VALUES(?)",(id_match, ))
     conn.commit()
     conn.close()
 
@@ -52,7 +53,7 @@ def search(nome="",apelido="",pontos="",crime=""):
 def delete(id):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("DELETE FROM cctv  where id=?",(id,))
+    cur.execute("DELETE FROM cctv where id=?",(id,))
     conn.commit()
     conn.close()
 
