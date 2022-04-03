@@ -29,7 +29,7 @@ def matchExist(id_match):
 def insertMatch(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("INSERT INTO cctvmatch VALUES (?)",(id_match))
+    cur.execute("INSERT INTO cctvmatch(id_match) VALUES(?)",(id_match, ))
     conn.commit()
     conn.close()
 
