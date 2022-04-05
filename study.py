@@ -1,39 +1,112 @@
-import cv2, os
-import numpy as np
-from PIL import Image
-import pickle
-import sqlite3
+from tkinter import *
+import database
 
-#recognizer = cv2.createLBPHFaceRecognizer()
-faceDetect=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-#path = 'dataSet'
+def get_selected_row(event):
+    global selected_tuple
+    index=list1.curselection()[0]
+    selected_tuple=list1.get(index)
+    entry1.delete(0,END)
+    entry1.insert(END,selected_tuple[1])
+    entry2.delete(0,END)
+    entry2.insert(END,selected_tuple[2])
+    entry3.delete(0,END)
+    entry3.insert(END,selected_tuple[3])
+    entry4.delete(0,END)
+    entry4.insert(END,selected_tuple[4])
+    entry5.delete(0,END)
+    entry5.insert(END,selected_tuple[5])
+    entry6.delete(0,END)
+    entry6.insert(END,selected_tuple[6])
 
-def getProfile(id):
-    conn = sqlite3.connect("FaceBase.db")
-    cmd = "SELECT * FROM People WHERE ID="+str(id)
-    cursor = conn.execute(cmd)
-    profile = None
-    for row in cursor:
-        profile = row
-    conn.close()
-    return profile
+def view_command():
+    list1.delete(0,END)
+    for row in database.view():
+        list1.insert(END,row)
 
-cam = cv2.VideoCapture(1)
-#font = cv2.InitFont(cv2.CV_FONT_HERSHEY_SIMPLEX, 1, 1, 0, 1, 1,)
-while True:
-    ret, im = cam.read()
-    gray = cv2. cvtColor(im, cv2.COLOR_BGR2GRAY)
-    faces= faceDetectdetectMultiSacale(gray, 1.3,5))
-    for (x,y,w,h) in faces:
-        sampleNum=sampleNum+1
-        id, conf = recognizer. predict (gray[y:y+h,x:x+w])
-        cv2.imwrite("cctv_rostos"+str(id)+"."+str(sampleNum)+".jpg",gray[y:y+h,x:x+w])
-        cv2.rectangle(im, (x,y), (x+w, y+h), (255,0,00),2)
-        profile=getProfile(id)
-        if(profile!=None):
-            cv2.cv.putText(cv2.cv.fromarray(im),str(profile[1]),(x,y+h+30),font, 255)
-            cv2.cv.putText(cv2.cv.fromarray(im),str(profile[2]),(x,y+h+60),font, 255)
-            cv2.cv.putText(cv2.cv.fromarray(im),str(profile[3]),(x,y+h+90),font, 255)
-            cv2.cv.putText(cv2.cv.fromarray(im),str(profile[4]),(x,y+h+120),font, 255)       
-        cv2.imshow("im", im)
-        cv2.waitKey(10)
+def search_command():
+    list1.delete(0,END)
+    for row in database.search(nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get()):
+        list1.insert(END,row)
+
+def add_command():
+    database.insert(nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get())
+    list1.delete(0,END)
+    list1.insert(END,(nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get()))
+
+def delete_command():
+    database.delete(selected_tuple[0])
+
+def update_command():
+    database.update(selected_tuple[0],nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get())
+
+
+
+window=Tk()
+window.geometry("1920x1080")
+window.title('CCTV Owner')
+
+
+label1=Label(window,text="CCTV EDIT")
+label1.grid(row=0,column=2)
+
+label2=Label(window,text="Nome")
+label2.grid(row=1,column=0)
+
+label3=Label(window,text="Apelido")
+label3.grid(row=2,column=0)
+
+label4=Label(window,text="Pontos")
+label4.grid(row=3,column=0)
+
+label5=Label(window,text="Crime")
+label5.grid(row=4,column=0)
+
+
+
+
+nome_text=StringVar()
+entry1=Entry(window,textvariable=nome_text)
+entry1.grid(row=1,column=1)
+
+apelido_text=StringVar()
+entry2=Entry(window,textvariable=apelido_text)
+entry2.grid(row=2,column=1)
+
+pontos_text=StringVar()
+entry3=Entry(window,textvariable=pontos_text)
+entry3.grid(row=3,column=1)
+
+crime_text=StringVar()
+entry6=Entry(window,textvariable=crime_text)
+entry6.grid(row=4,column=1)
+
+list1=Listbox(window,height=20,width=59)
+list1.grid(row=1,column=3, rowspan=6, columnspan=2)
+
+scrl=Scrollbar(window)
+scrl.grid(row=1,column=2, sticky='ns',rowspan=6)
+
+list1.configure(yscrollcommand=scrl.set)
+scrl.configure(command=list1.yview)
+
+
+
+
+list1.bind('<<ListboxSelect>>',get_selected_row)
+
+b1=Button(window,text="Ver todos",width=12, command=view_command)
+b1.grid(row=7, column=0)
+
+b2=Button(window,text="Adicionar Info",width=12,command=add_command)
+b2.grid(row=8, column=0)
+
+b3=Button(window,text="Apagar Info",width=12,command=delete_command)
+b3.grid(row=10, column=0)
+
+b4=Button(window,text="Procurar",width=12,command=search_command)
+b4.grid(row=7, column=1)
+
+b5=Button(window,text="Atualizar",width=12,command=update_command)
+b5.grid(row=8, column=1)
+
+window.mainloop()

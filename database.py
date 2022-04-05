@@ -3,8 +3,7 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, apelido TEXT, pontos INTEGER, crime TEXT, id_match INTEGER, face BLOB)")
-    #cur.execute("CREATE TABLE IF NOT EXISTs cctvmatch (id INTEGER PRIMARY KEY AUTOINCREMENT, id_match INTEGER)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'None', apelido TEXT, pontos INTEGER, crime TEXT, id_match INTEGER, face BLOB)")
     conn.commit()
     conn.close()
     
@@ -15,6 +14,12 @@ def insert(nome,apelido,pontos,crime):
     conn.commit()
     conn.close()
     view()
+
+def getNameFromID(id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute('SELECT nome FROM cctv WHERE id_match = ?', (id_match, ))
+    return str(cur.fetchone()[0])
 
 def matchExist(id_match):
     conn = sqlite3.connect("cctv.db")
@@ -42,10 +47,10 @@ def view():
     conn.close()
     return row
 
-def search(nome="",apelido="",pontos="",crime=""):
+def search(nome="",apelido="",pontos="",crime="",id_match=""):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM cctv WHERE nome=? OR apelido=? OR pontos=?  OR crime=?",(nome,apelido,pontos,crime))
+    cur.execute("SELECT * FROM cctv WHERE nome=? OR apelido=? OR pontos=? OR crime=? OR id_match=?",(nome,apelido,pontos,crime,id_match))
     row = cur.fetchall()
     conn.close()
     return row
@@ -57,11 +62,14 @@ def delete(id):
     conn.commit()
     conn.close()
 
-def update(id,nome,apelido,pontos,crime):
+def update(id,nome,apelido,pontos,crime,id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("UPDATE cctv SET nome=? ,apelido=? , pontos=? , crime=? where id=?",(nome,apelido,pontos,crime,id))
+    cur.execute("UPDATE cctv SET nome=? ,apelido=? , pontos=? , crime=? , id_match=? where id=?",(nome,apelido,pontos,crime,id_match,id))
     conn.commit()
     conn.close()
+
+
+
 
 connect()
