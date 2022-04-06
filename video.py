@@ -63,11 +63,7 @@ def delete_command():
 def update_command():
     database.update(selected_tuple[0],nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get())
 
-
-
-
 #====================================== WINDOW - MANIPULATION - TKINTER =====================================#
-#Ao clicar no quadrado verde, cria a janela de "Manipulação"
 
 def tab1():
 
@@ -175,7 +171,6 @@ def tab1():
 
 #====================================== VÍDEO =====================================#
 
-#image = cv2.imread('abba.png') #Imagem em vez de Video
 video = cv2.VideoCapture(0) #nome do video ou link stream |  #Tela Cheia?
 print("Carregando...") 
 
@@ -251,11 +246,12 @@ while True:
         cv2.rectangle(image, (face_location[3]+350, face_location[2]-110), (face_location[1]+10, face_location[2]-80), (82,82,82), cv2.FILLED)
         cv2.rectangle(image, (face_location[3]+350, face_location[2]-60), (face_location[1]+10, face_location[2]-30), (82,82,82), cv2.FILLED)
 
-        data = db.getNameFromID(id)
+        nomecidadao = db.getNameFromID(match)
+        pontoscidadao = db.getPointsFromID(match)
 
         cv2.putText(image, "Cidadao {}".format(match), (face_location[1]+20, face_location[2]-180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
-        cv2.putText(image, "Nome {}".format(data), (face_location[1]+20, face_location[2]-140), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
-        cv2.putText(image, "Pontos", (face_location[1]+20, face_location[2]-90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)      
+        cv2.putText(image, "Nome {}".format(nomecidadao), (face_location[1]+20, face_location[2]-140), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
+        cv2.putText(image, "Pontos {}".format(pontoscidadao), (face_location[1]+20, face_location[2]-90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)      
         cv2.putText(image, "Mais Info", (face_location[1]+20, face_location[2]-40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
 
 

@@ -3,23 +3,35 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'None', apelido TEXT, pontos INTEGER, crime TEXT, id_match INTEGER, face BLOB)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'None', apelido TEXT, pontos INTEGER DEFAULT '1000', crime TEXT, id_match INTEGER, face BLOB)")
     conn.commit()
     conn.close()
     
 def insert(nome,apelido,pontos,crime):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("INSERT INTO cctv VALUES (NULL, ?,?,?,?)",(nome,apelido,pontos,crime))
+    #cur.execute("INSERT INTO cctv VALUES (NULL, ?,?,?,?)",(nome,apelido,pontos,crime))
+    cur.execute("INSERT INTO cctv(nome, apelido, pontos, crime) VALUES(?, ?, ?, ?)",(nome, apelido, pontos, crime, ))
     conn.commit()
     conn.close()
     view()
+
 
 def getNameFromID(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     cur.execute('SELECT nome FROM cctv WHERE id_match = ?', (id_match, ))
-    return str(cur.fetchone()[0])
+    data = cur.fetchone()[0]
+    conn.close()
+    return data
+
+def getPointsFromID(id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute('SELECT pontos FROM cctv WHERE id_match = ?', (id_match, ))
+    data = cur.fetchone()[0]
+    conn.close()
+    return data
 
 def matchExist(id_match):
     conn = sqlite3.connect("cctv.db")
@@ -68,8 +80,5 @@ def update(id,nome,apelido,pontos,crime,id_match):
     cur.execute("UPDATE cctv SET nome=? ,apelido=? , pontos=? , crime=? , id_match=? where id=?",(nome,apelido,pontos,crime,id_match,id))
     conn.commit()
     conn.close()
-
-
-
 
 connect()
