@@ -3,7 +3,7 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'None', apelido TEXT, pontos INTEGER DEFAULT '1000', crime TEXT, id_match INTEGER, face BLOB)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT, pontos INTEGER DEFAULT '1000', crime TEXT, id_match INTEGER, face BLOB)")
     conn.commit()
     conn.close()
     
@@ -32,6 +32,13 @@ def getPointsFromID(id_match):
     data = cur.fetchone()[0]
     conn.close()
     return data
+
+def setPointsForID(pontos, id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE cctv SET pontos=? where id_match=?",(pontos, id_match, ))
+    conn.commit()
+    conn.close()
 
 def matchExist(id_match):
     conn = sqlite3.connect("cctv.db")
