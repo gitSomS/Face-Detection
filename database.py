@@ -3,7 +3,7 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT, pontos INTEGER DEFAULT '1000', crime TEXT, id_match INTEGER, face BLOB)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT DEFAULT 'Desconhecido', idade INTEGER DEFAULT 'Desconhecido', pontos INTEGER DEFAULT '1000', crime TEXT DEFAULT 'Nenhum', id_match INTEGER, face BLOB)")
     conn.commit()
     conn.close()
     
@@ -11,7 +11,7 @@ def insert(nome,apelido,pontos,crime):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     #cur.execute("INSERT INTO cctv VALUES (NULL, ?,?,?,?)",(nome,apelido,pontos,crime))
-    cur.execute("INSERT INTO cctv(nome, apelido, pontos, crime) VALUES(?, ?, ?, ?)",(nome, apelido, pontos, crime, ))
+    cur.execute("INSERT INTO cctv(nome, apelido, idade, pontos, crime) VALUES(?, ?, ?, ?, ?)",(nome, apelido, idade, pontos, crime, ))
     conn.commit()
     conn.close()
     view()
@@ -66,10 +66,10 @@ def view():
     conn.close()
     return row
 
-def search(nome="",apelido="",pontos="",crime="",id_match=""):
+def search(nome="",apelido="",pontos="",idade="",crime="",id_match=""):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM cctv WHERE nome=? OR apelido=? OR pontos=? OR crime=? OR id_match=?",(nome,apelido,pontos,crime,id_match))
+    cur.execute("SELECT * FROM cctv WHERE nome=? OR apelido=? OR idade=? OR pontos=? OR crime=? OR id_match=?",(nome,apelido,idade,pontos,crime,id_match))
     row = cur.fetchall()
     conn.close()
     return row
@@ -81,10 +81,10 @@ def delete(id):
     conn.commit()
     conn.close()
 
-def update(id,nome,apelido,pontos,crime,id_match):
+def update(id,nome,apelido,idade,pontos,crime,id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("UPDATE cctv SET nome=? ,apelido=? , pontos=? , crime=? , id_match=? where id=?",(nome,apelido,pontos,crime,id_match,id))
+    cur.execute("UPDATE cctv SET nome=? ,apelido=? , idade=? , pontos=? , crime=? , id_match=? where id=?",(nome,apelido,idade,pontos,crime,id_match,id))
     conn.commit()
     conn.close()
 

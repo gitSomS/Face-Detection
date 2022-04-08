@@ -1,3 +1,5 @@
+#====================================== IMPORTS =====================================#
+
 from tkinter import *
 import tkinter as tk, threading
 from tkinter import messagebox
@@ -11,9 +13,9 @@ import os
 import pickle
 import face_recognition #opencv
 import database as db
+import sqlite3
 
-
-
+#====================================== DEFINES =====================================#
 
 KNOWN_FACES_DIR = "cctv_rostos" #pasta com os ID's 
 TOLERANCE = 0.6 #valor maior = mais preciso
@@ -21,26 +23,41 @@ FRAME_THICKNESS = 3 #linha verde
 FONT_THICKNESS = 2 #font
 MODEL = "hog" #cnn
 
-#====================================== DEFINES =====================================#
+window=Tk()
+window.title('CCTV Owner')
+window.geometry("1920x1080")
+window.iconbitmap('D:\Faculdade\Projeto Artistico\Face Detection\logo.ico')
+main = Frame(window)
+f1 = ("Arial", 20)
+f2 = ("Arial", 10)
+
+#====================================== FUNÇÕES =====================================#
 
 def get_selected_row(event):
     global selected_tuple
-    index=list1.curselection()[0]
-    selected_tuple=list1.get(index)
-    entry1.delete(0,END)
-    entry1.insert(END,selected_tuple[1])
-    entry2.delete(0,END)
-    entry2.insert(END,selected_tuple[2])
-    entry3.delete(0,END)
-    entry3.insert(END,selected_tuple[3])
-    entry4.delete(0,END)
-    entry4.insert(END,selected_tuple[4])
-    entry5.delete(0,END)
-    entry5.insert(END,selected_tuple[4])
+    index = list1.focus()
+    print(index)
+    selected_tuple = index["id"]
 
+#def get_selected_row(event):
+#    global selected_tuple
+#    index=list1.curselection()[0]
+ #   selected_tuple=list1.get(index)
+  #  entry1.delete(0,END)
+   # entry1.insert(END,selected_tuple[1])
+    #entry2.delete(0,END)
+    #entry2.insert(END,selected_tuple[2])
+    #entry3.delete(0,END)
+    #entry3.insert(END,selected_tuple[3])
+    #entry4.delete(0,END)
+    #entry4.insert(END,selected_tuple[4])
+    #entry5.delete(0,END)
+    #entry5.insert(END,selected_tuple[5])
+    #entry6.delete(0,END)
+    #entry6.insert(END,selected_tuple[6])
 
 def update_command():
-    database.update(selected_tuple[0],nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get())
+    database.update(selected_tuple[0],nome_text.get(),apelido_text.get(),idade_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get())
 
 def view_command():
     list1.delete(0,END)
@@ -49,41 +66,19 @@ def view_command():
 
 def search_command():
     list1.delete(0,END)
-    for row in database.search(nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get()):
+    for row in database.search(nome_text.get(),apelido_text.get(),idade_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get()):
         list1.insert(END,row)
 
-def searchtable():
-    treeview.selection()
-    fetchdata = treeview.get_children()
-    for f in fetchdata:
-        treeview.delete(f)
-    conn = None
-    try:
-        conn = connect("cctv.db")
-        core = conn.cursor()
-        db = "select * from cctv where nome = '%s' "
-        nome = ws_ent.get()
-        if (len(nome) < 2) or (not nome.isalpha()):
-            showerror("fail", "invalid nome")
-        else:
-            core.execute(db %(nome))
-            data = core.fetchall()
-            for d in data:
-                treeview.insert("", END, values=d)
-            
-    except Exception as e:
-        showerror("issue", e)
-
-    finally:
-        if conn is not None:
-            conn.close()
-
 def add_command():
-    database.insert(nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get())
-    list1.delete(0,END)
-    list1.insert(END,(nome_text.get(),apelido_text.get(),pontos_text.get(),crime_text.get()))
-    view_command()
-    messagebox.showinfo("CCTV Owner", "Informação adicionada com sucesso!")
+        try:
+            if selected_tuple[0]:
+                database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get())
+                list1.delete(0,END)
+                list1.insert(END,(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get()))
+                view_command()
+                messagebox.showinfo("CCTV Owner", "Informação adicionada com sucesso!")
+        except NameError:
+            messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
 
 def delete_command():
     try:
@@ -118,21 +113,69 @@ def ngosto():
     #PEGAR OS PONTOS_TEXT E INSERIR -1 PONTO
     messagebox.showerror("CCTV Owner", "O cidadao X recebeu -1 ponto.")
 
-def mouseevent(event, x, y, flags, param):
-	
-    if event == cv2.EVENT_LBUTTONDOWN:
-        print("Teste")
-	
+def show():
+    ws_ent.delete(0, END)     
+    ws_ent.focus()
+    list1.selection()
+    conn = None
+    try:
+        conn = sqlite3.connect("cctv.db")    
+        cursor = conn.cursor()
+        db = "select * from cctv"   
+        cursor.execute(db)
 
-window=Tk()
-window.title('CCTV Owner')
-window.geometry("1920x1080")
-#window.iconbitmap('D:\\images\\favicon.ico')
-main = Frame(window)
-f1 = ("Arial", 20)
-f2 = ("Arial", 10)
-video_path = "5.mp4" #paste your video path here
+        fetchdata = list1.get_children()       
+        for elements in fetchdata:
+            list1.delete(elements)
+    
 
+        data = cursor.fetchall()
+        for d in data:
+            list1.insert("", END, values=d)
+
+        conn.commit()
+    except Exception as e:
+        messagebox.showerror('Erro.', e)
+        conn.rollback()
+    finally:
+        if conn is not None:
+            conn.close()
+
+def searchdata():
+    list1.selection()
+    fetchdata = list1.get_children()
+    for f in fetchdata:
+        list1.delete(f)
+    conn = None
+    try:
+        conn = sqlite3.connect("cctv.db")
+        core = conn.cursor()
+        db = "select * from cctv where nome = '%s' "
+        name = ws_ent.get()
+        if (len(name) < 2) or (not name.isalpha()):
+            messagebox.showerror('CCTV Owner','Erro.')
+
+        else:
+            core.execute(db %(name))
+            data = core.fetchall()
+            for d in data:
+                list1.insert("", END, values=d)
+            
+    except Exception as e:
+        showerror("issue", e)
+
+    finally:
+        if conn is not None:
+            conn.close()
+
+def reset():
+    show()  
+
+# MOUSE EVENT VIDEO
+#def mouseevent(event, x, y, flags, param):
+    #if event == cv2.EVENT_LBUTTONDOWN:
+    #print("Teste")
+	
 #====================================== DADOS - INFO - CIDADAO =====================================#
     
 inf = LabelFrame(window,relief=SOLID)
@@ -148,10 +191,10 @@ Label(inf, text="Apelido").place(relx=0.35,rely=0.2, anchor="nw")
 entry2 = Entry(window, textvariable=apelido_text)
 entry2.place(relx=0.84,rely=0.6, anchor="nw")
 
-pontos_text=StringVar()
-Label(inf, text="Pontos").place(relx=0.35,rely=0.3, anchor="nw")
-entry3 = Entry(window, textvariable=pontos_text)
-entry3.place(relx=0.84,rely=0.65, anchor="nw")
+idade_text=StringVar()
+Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
+entry2 = Entry(window, textvariable=idade_text)
+entry2.place(relx=0.84,rely=0.65, anchor="nw")
 
 crime_text=StringVar()
 Label(inf, text="Crime").place(relx=0.35,rely=0.4, anchor="nw")
@@ -161,13 +204,12 @@ entry4.place(relx=0.84,rely=0.7, anchor="nw")
 id_match_text=StringVar()
 entry5 = Entry(window, textvariable=id_match_text)
 
-
-
 Button(inf, text="Adicionar Info", command=add_command).place(relx=0.5,rely=0.55, anchor="center")
 Button(inf, text="+1 Ponto", command=gosto).place(relx=0.3,rely=0.7, anchor="center")
 Button(inf, text="-1 Ponto", command=ngosto).place(relx=0.7,rely=0.7, anchor="center")
 
 #====================================== TITLE =====================================#
+
 Label(main, text="CCTV Control", font=f1, relief=SOLID).place(relx=0.25, rely=0, anchor="nw", relwidth=0.45, relheight=0.1) 
 
 #====================================== DATABASE - LISTBOX =====================================#
@@ -175,47 +217,71 @@ Label(main, text="CCTV Control", font=f1, relief=SOLID).place(relx=0.25, rely=0,
 inf = LabelFrame(window,relief=SOLID)
 inf.place(relx=0,rely=0.7, anchor="nw", relwidth=0.25,relheight=0.3)
 
-scrollbarx = Scrollbar(inf, orient=HORIZONTAL)  
-scrollbary = Scrollbar(inf, orient=VERTICAL)    
+scrollbarx = Scrollbar(window, orient=HORIZONTAL)  
+scrollbary = Scrollbar(window, orient=VERTICAL)    
 
-treeview = ttk.Treeview(inf, columns=("rollno", "name"), show='headings', height=22)  
-treeview.pack()
-treeview.heading('rollno', text="Roll No", anchor=CENTER)
-treeview.column("rollno", stretch=NO, width = 100) 
-treeview.heading('name', text="Name", anchor=CENTER)
-treeview.column("name", stretch=NO)
+list1 = ttk.Treeview(window, columns=("id", "name", "apelido", "idade", "pontos", "crime"), show='headings', height=22)  
+list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
+list1.heading('id', text="ID", anchor=CENTER)
+list1.column("id", stretch=NO, width = 30) 
+list1.heading('name', text="Nome", anchor=CENTER)
+list1.column("name", stretch=NO, width = 112)
+list1.heading('apelido', text="Apelido", anchor=CENTER)
+list1.column("apelido", stretch=NO, width = 112)
+list1.heading('idade', text="Idade", anchor=CENTER)
+list1.column("idade", stretch=NO, width = 112)
+list1.heading('pontos', text="Pontos", anchor=CENTER)
+list1.column("pontos", stretch=NO, width = 112)
+list1.heading('crime', text="Crime", anchor=CENTER)
+list1.column("crime", stretch=NO, width = 112)
+
+#Scrollbar - Desnecessário - Futuro
+    #scrollbary.config(command=treeview.yview)
+    #scrollbary.place(x = 480, y = 7)
+    #scrollbarx.config(command=treeview.xview)
+    #scrollbarx.place(x = 920, y = 960)
+
+style = ttk.Style()
+style.theme_use("default")
+style.map("Treeview")
 
 
-#scrollbary.config(command=treeview.yview)
-#scrollbary.place(x = 526, y = 7)
-#scrollbarx.config(command=treeview.xview)
-#scrollbarx.place(x = 220, y = 460)
-#style = ttk.Style()
-#style.theme_use("default")
-#style.map("Treeview")
+list1.bind('<<TreeViewSelect>>', self.get_selected_row)
 
 
-#ws_lbl = Label(inf, text = "Name", font=('calibri', 12, 'normal').place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7))
-#ws_ent = Entry(inf,  width = 20, font=('Arial', 15, 'bold').place(relx=0, rely=0)
-#ws_btn1 = Button(inf, text = 'Search',  width = 8, font=('calibri', 12, 'normal'), command = search)
-#ws_btn1.place(x = 480, y = 540)
-#ws_btn2 = Button(inf, text = 'Reset',  width = 8, font=('calibri', 12, 'normal'), command = reset)
-#ws_btn2.place(x = 600, y = 540)
+#ANTES 
+#list1 = Listbox(window)
+#list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
+#list1.bind('<<ListboxSelect>>',get_selected_row)
 
 #====================================== CONFIG DATABASE =====================================#
-
-inf = LabelFrame(window,relief=SOLID)
-inf.place(relx=0,rely=0.7, anchor="nw", relwidth=0.25,relheight=0.3)
 
 Button(inf, text="Atualizar", command=view_command).place(relx=0.6,rely=0.25, anchor="center")  
 Button(inf, text="Apagar Info",command=delete_command).place(relx=0.2,rely=0.25, anchor="center")
 
-ws_lbl = Label(inf, text = "Nome", font=('calibri', 12, 'normal')).place(relx=0.1,rely=0.45)
-ws_ent = Entry(inf,  width = 20, font=('Arial', 15, 'bold')).place(relx=0.2,rely=0.45)
-ws_btn1 = Button(inf, text = 'Procurar').place(relx=0.8,rely=0.49, anchor="center")
-ws_btn2 = Button(inf, text = 'Resetar').place(relx=0.8,rely=0.6, anchor="center")
+ws_lbl = Label(inf, text = "Nome", font=('calibri', 12, 'normal'))
+ws_lbl.place(relx=0.1,rely=0.45)
+ws_ent = Entry(inf,  width = 20, font=('Arial', 15, 'bold'))
+ws_ent.place(relx=0.2,rely=0.45)
+ws_btn1 = Button(inf, text = 'Procurar', command = searchdata)
+ws_btn1.place(relx=0.8,rely=0.49, anchor="center")
+ws_btn2 = Button(inf, text = 'Reset', command = reset)
+ws_btn2.place(relx=0.8,rely=0.6, anchor="center")
 
 
+#ANTES #list1 = Listbox(window)
+#list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
+#list1.bind('<<ListboxSelect>>',get_selected_row)
+
+
+show()
+
+#BLOQUEAR MOVER TABELA - FUTURO
+    #def handle_click(event):
+    #    if treeview.identify_region(event.x, event.y) == "separator":
+    #       return "break"
+    #...
+    #treeview.bind('<Button-1>', handle_click)
 
 #====================================== DADOS - INFO - CIDADAO =====================================#
 
@@ -226,7 +292,7 @@ Label(user, text="Info Cidadão", font=f1).place(relx=0.4, rely=0.05, anchor="nw
 Label(user, text="Foto",textvariable=nome_text, font=f1).place(relx=0.5, rely=0.3, anchor="nw")
 Label(user, text="Nome:",textvariable=nome_text, font=f1).place(relx=0.5, rely=0.5, anchor="nw")
 Label(user, text="Apelido:",textvariable=apelido_text, font=f1).place(relx=0.5, rely=0.6, anchor="nw")
-Label(user, text="Pontos:",textvariable=pontos_text, font=f1).place(relx=0.5, rely=0.7, anchor="nw")
+Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.5, rely=0.7, anchor="nw")
 Label(user, text="Crime:",textvariable=crime_text, font=f1).place(relx=0.5, rely=0.8, anchor="nw")
    
 #====================================== CONFIG VIDEO =====================================#
@@ -243,7 +309,6 @@ def main_f():
     window.update()
     width = vid.winfo_width()
     height = vid.winfo_height()
-
 
 #FACE DETECTION
     know_faces = []
@@ -263,7 +328,6 @@ def main_f():
     video = cv2.VideoCapture(0)
 
     def display_video(label):
-    # iterate through video data
         while(video.isOpened()):
             frame, image = video.read()
 
@@ -310,17 +374,18 @@ def main_f():
                     cv2.putText(image, "Pontos {}".format(pontoscidadao), (face_location[1]+20, face_location[2]-90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)      
                     cv2.putText(image, "Mais Info", (face_location[1]+20, face_location[2]-40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
 
-                #for image in video.iter_data():
-                    # convert array into image
+                #for image in video.iter_data(): # convert array into image
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(image)
                 img2 = img.resize(((width,height)))
+                    
                     # Convert image to PhotoImage
                 image_frame = ImageTk.PhotoImage(image = img2)
                 
                 # configure video to the lable
                 label.config(image=image_frame)
                 label.image = image_frame
+    
     # create and start thread
     my_vid = Label(vid)
     my_vid.pack()

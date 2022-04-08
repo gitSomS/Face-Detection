@@ -10,6 +10,7 @@ cap = cv2.VideoCapture(0)
 #For Video input:
 #cap = cv2.VideoCapture("1.mp4")
 prevTime = 0
+
 with mp_face_detection.FaceDetection(
     min_detection_confidence=0.7) as face_detection:
   while True:
@@ -19,7 +20,7 @@ with mp_face_detection.FaceDetection(
       break
 
     #Convert the BGR image to RGB.
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
     results = face_detection.process(image)
     match = None
