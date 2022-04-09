@@ -10,6 +10,7 @@ import database
 import cv2
 import os
 import pickle
+import time
 import face_recognition #opencv
 import database as db
 import sqlite3
@@ -37,7 +38,12 @@ def get_selected_row(event):
     index = list1.focus()
     index2 = list1.item(index)["values"]
     selected_tuple = index2[0]
-    selected_tuple = index2[1]
+    
+    nome_text.set(index2[1])
+    apelido_text.set(index2[2])
+    idade_text.set(index2[3])
+    pontos_text.set(index2[4])
+    id_match_text.set(index2[0]) 
 
 def update_command():
     database.update(selected_tuple,nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get(),id_match_text.get())
@@ -52,14 +58,14 @@ def search_command():
     for row in database.search(nome_text.get(),apelido_text.get(),idade_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get()):
         list1.insert(END,row)
 
-def add_command():
+def edit_command():
         try:
-            if selected_tuple[0]:
+            if selected_tuple:
                 database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get())
                 list1.delete(0,END)
                 list1.insert(END,(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get()))
                 show()
-                messagebox.showinfo("CCTV Owner", "Informação adicionada com sucesso!")
+                messagebox.showinfo("CCTV Owner", "Informação editada com sucesso!")
         except NameError:
             messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
 
@@ -80,22 +86,26 @@ def delete_command():
     
 def gosto():
     try:
-        if selected_tuple[5]:
-            points = database.getPointsFromID(selected_tuple[5])
-
-            points + 1
-
-            database.setPointsForID(points, selected_tuple[5])
-            messagebox.showwarning("CCTV Owner", "O cidadao {5} recebeu +1 ponto.".points)
+        if selected_tuple:
+            points = pontos_text.get()
+            points = points + 1
+            pontos_text.set(points)
+            database.setPointsForID(points, selected_tuple)
+            messagebox.showwarning("CCTV Owner", "O cidadao {0} recebeu +1 ponto.".format(nome_text.get()))
+            show()
     except NameError:
         messagebox.showwarning('CCTV Owner','Selecione o cidadão.')
 
 def ngosto():
-    #Escolher um cidadao primeiro
-    #SENAO MANDAR MENSAGEM PARA ESCOLHER CIDADAO
-    #PEGAR OS PONTOS_TEXT E INSERIR -1 PONTO
-    messagebox.showerror("CCTV Owner", "O cidadao X recebeu -1 ponto.")
-
+    try:
+        if selected_tuple:
+            points = pontos_text.get()
+            points = points - 1
+            pontos_text.set(points)
+            database.setPointsForID(points, selected_tuple)
+            messagebox.showwarning("CCTV Owner", "O cidadao {0} recebeu -1 ponto.".format(nome_text.get()))
+    except NameError:
+        messagebox.showwarning('CCTV Owner','Selecione o cidadão.')
 def show():
     ws_ent.delete(0, END)     
     ws_ent.focus()
@@ -176,18 +186,20 @@ entry2.place(relx=0.84,rely=0.6, anchor="nw")
 
 idade_text=StringVar()
 Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
-entry2 = Entry(window, textvariable=idade_text)
-entry2.place(relx=0.84,rely=0.65, anchor="nw")
+entry3 = Entry(window, textvariable=idade_text)
+entry3.place(relx=0.84,rely=0.65, anchor="nw")
 
-crime_text=StringVar()
-Label(inf, text="Crime").place(relx=0.35,rely=0.4, anchor="nw")
-entry4 = Entry(window, textvariable=crime_text)
-entry4.place(relx=0.84,rely=0.7, anchor="nw")
+pontos_text=IntVar()
 
-id_match_text=StringVar()
-entry5 = Entry(window, textvariable=id_match_text)
+#crime_text=StringVar()
+#Label(inf, text="Pontos").place(relx=0.35,rely=0.4, anchor="nw")
+#entry4 = Entry(window, textvariable=crime_text)
+#entry4.place(relx=0.84,rely=0.7, anchor="nw")
 
-Button(inf, text="Adicionar Info", command=add_command).place(relx=0.5,rely=0.55, anchor="center")
+#id_match_text=StringVar()
+#entry5 = Entry(window, textvariable=id_match_text)
+
+Button(inf, text="Adicionar Info", command=edit_command).place(relx=0.5,rely=0.55, anchor="center")
 Button(inf, text="+1 Ponto", command=gosto).place(relx=0.3,rely=0.7, anchor="center")
 Button(inf, text="-1 Ponto", command=ngosto).place(relx=0.7,rely=0.7, anchor="center")
 
@@ -218,24 +230,16 @@ list1.column("pontos", stretch=NO, width = 112)
 list1.heading('crime', text="Crime", anchor=CENTER)
 list1.column("crime", stretch=NO, width = 112)
 
+style = ttk.Style()
+style.theme_use("default")
+style.map("Treeview")
+list1.bind('<ButtonRelease-1>', get_selected_row)
+
 #Scrollbar - Desnecessário - Futuro
     #scrollbary.config(command=treeview.yview)
     #scrollbary.place(x = 480, y = 7)
     #scrollbarx.config(command=treeview.xview)
     #scrollbarx.place(x = 920, y = 960)
-
-style = ttk.Style()
-style.theme_use("default")
-style.map("Treeview")
-
-
-list1.bind('<ButtonRelease-1>', get_selected_row)
-
-
-#ANTES 
-#list1 = Listbox(window)
-#list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
-#list1.bind('<<ListboxSelect>>',get_selected_row)
 
 #====================================== CONFIG DATABASE =====================================#
 
@@ -251,12 +255,6 @@ ws_btn1.place(relx=0.8,rely=0.49, anchor="center")
 ws_btn2 = Button(inf, text = 'Reset', command = reset)
 ws_btn2.place(relx=0.8,rely=0.6, anchor="center")
 
-
-#ANTES #list1 = Listbox(window)
-#list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
-#list1.bind('<<ListboxSelect>>',get_selected_row)
-
-
 show()
 
 #BLOQUEAR MOVER TABELA - FUTURO
@@ -271,12 +269,13 @@ show()
 user = LabelFrame(window)
 user.place(relx=0.7,rely=0, anchor="nw", relwidth=0.3,relheight=0.5)
 
-Label(user, text="Info Cidadão", font=f1).place(relx=0.4, rely=0.05, anchor="nw")
-Label(user, text="Foto",textvariable=nome_text, font=f1).place(relx=0.5, rely=0.3, anchor="nw")
-Label(user, text="Nome:",textvariable=nome_text, font=f1).place(relx=0.5, rely=0.5, anchor="nw")
-Label(user, text="Apelido:",textvariable=apelido_text, font=f1).place(relx=0.5, rely=0.6, anchor="nw")
-Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.5, rely=0.7, anchor="nw")
-Label(user, text="Crime:",textvariable=crime_text, font=f1).place(relx=0.5, rely=0.8, anchor="nw")
+#corrigir textvariable dps
+Label(user, text="Info Cidadão", font=f1).place(relx=0.55, rely=0.05, anchor="center")
+Label(user, text="FOTO", font=f1).place(relx=0.55, rely=0.3, anchor="center")
+Label(user, text="Nome", textvariable = nome_text, font=f1).place(relx=0.55, rely=0.5, anchor="center")
+Label(user, text="Apelido: ",textvariable=apelido_text, font=f1).place(relx=0.55, rely=0.6, anchor="center")
+Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.55, rely=0.7, anchor="center")
+Label(user, text="Pontos:",textvariable=pontos_text, font=f1).place(relx=0.55, rely=0.8, anchor="center")
    
 #====================================== CONFIG VIDEO =====================================#
 

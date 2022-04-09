@@ -113,6 +113,7 @@ Button(inf, text="-1 Ponto", command=ngosto).place(relx=0.7,rely=0.7, anchor="ce
 
 list1 = Listbox(window)
 list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
+list1.bind('<<ListboxSelect>>',get_selected_row)
 
 #scrl=Scrollbar(window)
 #scrl.grid(row=1,column=0, padx = (10,0), sticky='ns',rowspan=2)
@@ -121,7 +122,6 @@ list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
 #scrl.configure(command=list1.yview)
 
 
-list1.bind('<<ListboxSelect>>',get_selected_row)
 
 #====================================== OPÇÕES DATABASE =====================================#
 inf = LabelFrame(window, relief=SOLID)
