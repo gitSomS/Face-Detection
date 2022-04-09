@@ -5,7 +5,6 @@ import tkinter as tk, threading
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.messagebox import showinfo
-import imageio
 from PIL import Image,ImageTk
 import database
 import cv2
@@ -36,28 +35,12 @@ f2 = ("Arial", 10)
 def get_selected_row(event):
     global selected_tuple
     index = list1.focus()
-    print(index)
-    selected_tuple = index["id"]
-
-#def get_selected_row(event):
-#    global selected_tuple
-#    index=list1.curselection()[0]
- #   selected_tuple=list1.get(index)
-  #  entry1.delete(0,END)
-   # entry1.insert(END,selected_tuple[1])
-    #entry2.delete(0,END)
-    #entry2.insert(END,selected_tuple[2])
-    #entry3.delete(0,END)
-    #entry3.insert(END,selected_tuple[3])
-    #entry4.delete(0,END)
-    #entry4.insert(END,selected_tuple[4])
-    #entry5.delete(0,END)
-    #entry5.insert(END,selected_tuple[5])
-    #entry6.delete(0,END)
-    #entry6.insert(END,selected_tuple[6])
+    index2 = list1.item(index)["values"]
+    selected_tuple = index2[0]
+    selected_tuple = index2[1]
 
 def update_command():
-    database.update(selected_tuple[0],nome_text.get(),apelido_text.get(),idade_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get())
+    database.update(selected_tuple,nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get(),id_match_text.get())
 
 def view_command():
     list1.delete(0,END)
@@ -75,19 +58,19 @@ def add_command():
                 database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get())
                 list1.delete(0,END)
                 list1.insert(END,(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get()))
-                view_command()
+                show()
                 messagebox.showinfo("CCTV Owner", "Informação adicionada com sucesso!")
         except NameError:
             messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
 
 def delete_command():
     try:
-        if selected_tuple[0]:
+        if selected_tuple:
             res = messagebox.askquestion('CCTV Owner', 'Tem certeza que deseja remover o cidadão?')
             if res == 'yes':
-                database.delete(selected_tuple[0])
+                database.delete(selected_tuple)
                 messagebox.showinfo('CCTV Owner', 'Cidadão removido com sucesso.')
-                view_command()
+                show()
             elif res == 'no':
                 messagebox.showinfo('CCTV Owner', 'Tarefa cancelada.')
         else:
@@ -246,7 +229,7 @@ style.theme_use("default")
 style.map("Treeview")
 
 
-list1.bind('<<TreeViewSelect>>', self.get_selected_row)
+list1.bind('<ButtonRelease-1>', get_selected_row)
 
 
 #ANTES 
@@ -256,7 +239,7 @@ list1.bind('<<TreeViewSelect>>', self.get_selected_row)
 
 #====================================== CONFIG DATABASE =====================================#
 
-Button(inf, text="Atualizar", command=view_command).place(relx=0.6,rely=0.25, anchor="center")  
+Button(inf, text="Atualizar", command=reset).place(relx=0.6,rely=0.25, anchor="center")  
 Button(inf, text="Apagar Info",command=delete_command).place(relx=0.2,rely=0.25, anchor="center")
 
 ws_lbl = Label(inf, text = "Nome", font=('calibri', 12, 'normal'))
