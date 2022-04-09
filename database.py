@@ -34,6 +34,8 @@ def getPointsFromID(id_match):
     return data
 
 def setPointsForID(pontos, id_match):
+    print(pontos)
+    print(id_match)
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     cur.execute("UPDATE cctv SET pontos=? where id_match=?",(pontos, id_match, ))

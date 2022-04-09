@@ -43,7 +43,7 @@ def get_selected_row(event):
     apelido_text.set(index2[2])
     idade_text.set(index2[3])
     pontos_text.set(index2[4])
-    id_match_text.set(index2[0]) 
+    #id_match_text.set(index2[0]) 
 
 def update_command():
     database.update(selected_tuple,nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get(),id_match_text.get())
@@ -88,7 +88,9 @@ def gosto():
     try:
         if selected_tuple:
             points = pontos_text.get()
+            
             points = points + 1
+
             pontos_text.set(points)
             database.setPointsForID(points, selected_tuple)
             messagebox.showwarning("CCTV Owner", "O cidadao {0} recebeu +1 ponto.".format(nome_text.get()))
@@ -185,9 +187,7 @@ entry2 = Entry(window, textvariable=apelido_text)
 entry2.place(relx=0.84,rely=0.6, anchor="nw")
 
 idade_text=StringVar()
-Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
-entry3 = Entry(window, textvariable=idade_text)
-entry3.place(relx=0.84,rely=0.65, anchor="nw")
+
 
 pontos_text=IntVar()
 
@@ -215,10 +215,10 @@ inf.place(relx=0,rely=0.7, anchor="nw", relwidth=0.25,relheight=0.3)
 scrollbarx = Scrollbar(window, orient=HORIZONTAL)  
 scrollbary = Scrollbar(window, orient=VERTICAL)    
 
-list1 = ttk.Treeview(window, columns=("id", "name", "apelido", "idade", "pontos", "crime"), show='headings', height=22)  
+list1 = ttk.Treeview(window, columns=("id_match", "name", "apelido", "idade", "pontos", "crime"), show='headings', height=22)  
 list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
-list1.heading('id', text="ID", anchor=CENTER)
-list1.column("id", stretch=NO, width = 30) 
+list1.heading('id_match', text="ID", anchor=CENTER)
+list1.column("id_match", stretch=NO, width = 30) 
 list1.heading('name', text="Nome", anchor=CENTER)
 list1.column("name", stretch=NO, width = 112)
 list1.heading('apelido', text="Apelido", anchor=CENTER)
@@ -295,7 +295,7 @@ def main_f():
 #FACE DETECTION
     know_faces = []
     know_names = []
-
+    
     for name in os.listdir(KNOWN_FACES_DIR):
         for filename in os.listdir(f"{KNOWN_FACES_DIR}\\{name}"):
             encoding = pickle.load(open (f"{KNOWN_FACES_DIR}/{name}/{filename}", "rb"))
@@ -305,7 +305,8 @@ def main_f():
     if len(know_names) > 0:
         next_id = max(know_names) + 1
     else:
-        next_id = 0 
+        next_id = 0
+
 
     video = cv2.VideoCapture(0)
 
