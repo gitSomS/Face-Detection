@@ -8,11 +8,10 @@ mp_drawing = mp.solutions.drawing_utils
 #For webcam input:
 cap = cv2.VideoCapture(0)
 #For Video input:
-#cap = cv2.VideoCapture("1.mp4")
+#ap = cv2.VideoCapture("1.mp4")
 prevTime = 0
-
 with mp_face_detection.FaceDetection(
-    min_detection_confidence=0.7) as face_detection:
+    min_detection_confidence=0.5) as face_detection:
   while True:
     success, image = cap.read()
     if not success:
@@ -20,24 +19,25 @@ with mp_face_detection.FaceDetection(
       break
 
     #Convert the BGR image to RGB.
-    #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
     results = face_detection.process(image)
-    match = None
-    
+
     # Draw the face detection annotations on the image.
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if results.detections:
       for detection in results.detections:
         mp_drawing.draw_detection(image, detection)
-        print("Cidadao ID: ") #Corrigir
 
     currTime = time.time()
     fps = 1 / (currTime - prevTime)
     prevTime = currTime
+    
     #cv2.putText(image, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_PLAIN, 3, (0, 196, 255), 2)
-    cv2.imshow('CCTV Program', image)
-    if cv2.waitKey(5) & 0xFF == ord("q"):
-      break
+     
+    cv2.imshow("CCTV Owner", image)
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break   
+      
 cap.release()

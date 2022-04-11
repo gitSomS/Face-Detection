@@ -27,6 +27,12 @@ panel.grid(row=0,column=2)
 
 #====================================== VÍDEO =====================================#
 
+def save(img, name, bbox, width=180, height=227):
+    x,y,w,h = bbox
+    imgCrop = img [y:h, x: w]
+    imgCrop = cv2.resize(imgCrop, (width, height))
+    cv2.write(name+".jpg", imgCrop)
+
 video = cv2.VideoCapture(0) #nome do video ou link stream |  #Tela Cheia?
 print("Carregando...") 
 
@@ -106,4 +112,3 @@ while True:
 
 video.release()
 #cv2.destroyAllWindows()
-window.mainloop()

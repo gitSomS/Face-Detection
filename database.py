@@ -7,11 +7,10 @@ def connect():
     conn.commit()
     conn.close()
     
-def insert(nome,apelido,pontos,crime):
+def insert(nome,apelido,idade, id):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    #cur.execute("INSERT INTO cctv VALUES (NULL, ?,?,?,?)",(nome,apelido,pontos,crime))
-    cur.execute("INSERT INTO cctv(nome, apelido, idade, pontos, crime) VALUES(?, ?, ?, ?, ?)",(nome, apelido, idade, pontos, crime, ))
+    cur.execute("UPDATE cctv SET nome=?, apelido=?, idade=? WHERE id=?",(nome, apelido, idade, id, ))
     conn.commit()
     conn.close()
     view()
@@ -83,10 +82,10 @@ def delete(id):
     conn.commit()
     conn.close()
 
-def update(id,nome,apelido,idade,pontos,crime,id_match):
+def update(id,nome,apelido,idade):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("UPDATE cctv SET nome=? ,apelido=? , idade=? , pontos=? , crime=? , id_match=? where id=?",(nome,apelido,idade,pontos,crime,id_match,id))
+    cur.execute("UPDATE cctv SET nome=? ,apelido=? , idade=? where id=?",(nome,apelido,idade,id))
     conn.commit()
     conn.close()
 

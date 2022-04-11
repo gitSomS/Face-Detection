@@ -15,6 +15,9 @@ import face_recognition #opencv
 import database as db
 import sqlite3
 
+import mediapipe as mp
+import time
+
 #====================================== DEFINES =====================================#
 
 KNOWN_FACES_DIR = "cctv_rostos" #pasta com os ID's 
@@ -22,6 +25,10 @@ TOLERANCE = 0.6 #valor maior = mais preciso
 FRAME_THICKNESS = 3 #linha verde
 FONT_THICKNESS = 2 #font
 MODEL = "hog" #cnn
+
+mp_face_detection = mp.solutions.face_detection
+mp_drawing = mp.solutions.drawing_utils
+
 
 window=Tk()
 window.title('CCTV Owner')
@@ -37,16 +44,14 @@ def get_selected_row(event):
     global selected_tuple
     index = list1.focus()
     index2 = list1.item(index)["values"]
+    
     selected_tuple = index2[0]
     
     nome_text.set(index2[1])
     apelido_text.set(index2[2])
     idade_text.set(index2[3])
     pontos_text.set(index2[4])
-    #id_match_text.set(index2[0]) 
-
-def update_command():
-    database.update(selected_tuple,nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get(),id_match_text.get())
+    id_match_text.set(index2[5]) 
 
 def view_command():
     list1.delete(0,END)
@@ -59,15 +64,14 @@ def search_command():
         list1.insert(END,row)
 
 def edit_command():
-        try:
-            if selected_tuple:
-                database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get())
-                list1.delete(0,END)
-                list1.insert(END,(nome_text.get(),apelido_text.get(),idade_text.get(),crime_text.get()))
-                show()
-                messagebox.showinfo("CCTV Owner", "Informação editada com sucesso!")
-        except NameError:
-            messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
+    try:
+        if selected_tuple:
+            database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),selected_tuple)
+            #list1.insert(nome_text.get(),apelido_text.get(),idade_text.get(),selected_tuple)
+            show()
+            messagebox.showinfo("CCTV Owner", "Informação editada com sucesso!")
+    except NameError:
+        messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
 
 def delete_command():
     try:
@@ -88,13 +92,13 @@ def gosto():
     try:
         if selected_tuple:
             points = pontos_text.get()
-            
             points = points + 1
-
             pontos_text.set(points)
             database.setPointsForID(points, selected_tuple)
             messagebox.showwarning("CCTV Owner", "O cidadao {0} recebeu +1 ponto.".format(nome_text.get()))
             show()
+        else:
+            messagebox.showwarning('CCTV Owner','Selecione o cidadão.')
     except NameError:
         messagebox.showwarning('CCTV Owner','Selecione o cidadão.')
 
@@ -108,6 +112,7 @@ def ngosto():
             messagebox.showwarning("CCTV Owner", "O cidadao {0} recebeu -1 ponto.".format(nome_text.get()))
     except NameError:
         messagebox.showwarning('CCTV Owner','Selecione o cidadão.')
+
 def show():
     ws_ent.delete(0, END)     
     ws_ent.focus()
@@ -187,17 +192,12 @@ entry2 = Entry(window, textvariable=apelido_text)
 entry2.place(relx=0.84,rely=0.6, anchor="nw")
 
 idade_text=StringVar()
+Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
+entry3 = Entry(window, textvariable=idade_text)
+entry3.place(relx=0.84,rely=0.65, anchor="nw")
 
-
-pontos_text=IntVar()
-
-#crime_text=StringVar()
-#Label(inf, text="Pontos").place(relx=0.35,rely=0.4, anchor="nw")
-#entry4 = Entry(window, textvariable=crime_text)
-#entry4.place(relx=0.84,rely=0.7, anchor="nw")
-
-#id_match_text=StringVar()
-#entry5 = Entry(window, textvariable=id_match_text)
+pontos_text=StringVar()
+id_match_text=IntVar()
 
 Button(inf, text="Adicionar Info", command=edit_command).place(relx=0.5,rely=0.55, anchor="center")
 Button(inf, text="+1 Ponto", command=gosto).place(relx=0.3,rely=0.7, anchor="center")
@@ -215,7 +215,7 @@ inf.place(relx=0,rely=0.7, anchor="nw", relwidth=0.25,relheight=0.3)
 scrollbarx = Scrollbar(window, orient=HORIZONTAL)  
 scrollbary = Scrollbar(window, orient=VERTICAL)    
 
-list1 = ttk.Treeview(window, columns=("id_match", "name", "apelido", "idade", "pontos", "crime"), show='headings', height=22)  
+list1 = ttk.Treeview(window, columns=("id_match", "name", "apelido", "idade", "pontos"), show='headings', height=22)  
 list1.place(relx=0, rely=0, anchor="nw", relwidth=0.25, relheight=0.7)
 list1.heading('id_match', text="ID", anchor=CENTER)
 list1.column("id_match", stretch=NO, width = 30) 
@@ -227,8 +227,6 @@ list1.heading('idade', text="Idade", anchor=CENTER)
 list1.column("idade", stretch=NO, width = 112)
 list1.heading('pontos', text="Pontos", anchor=CENTER)
 list1.column("pontos", stretch=NO, width = 112)
-list1.heading('crime', text="Crime", anchor=CENTER)
-list1.column("crime", stretch=NO, width = 112)
 
 style = ttk.Style()
 style.theme_use("default")
@@ -295,6 +293,8 @@ def main_f():
 #FACE DETECTION
     know_faces = []
     know_names = []
+
+    global next_id
     
     for name in os.listdir(KNOWN_FACES_DIR):
         for filename in os.listdir(f"{KNOWN_FACES_DIR}\\{name}"):
@@ -305,7 +305,7 @@ def main_f():
     if len(know_names) > 0:
         next_id = max(know_names) + 1
     else:
-        next_id = 0
+        next_id = 1
 
 
     video = cv2.VideoCapture(0)
@@ -328,10 +328,15 @@ def main_f():
 
                         if db.matchExist(match) != 1:
                             db.insertMatch(match)
-
+                        
                     else: # new id
+                        next_id = len(know_faces) +1
                         match = str(next_id)
                         next_id += 1
+                        
+
+                        if db.matchExist(match) != 1:
+                            db.insertMatch(match)
                         
                         know_names.append(match)
                         know_faces.append(face_encoding)
@@ -367,13 +372,13 @@ def main_f():
                 
                 # configure video to the lable
                 label.config(image=image_frame)
-                label.image = image_frame
-    
+                label.image = image_frame         
+
     # create and start thread
     my_vid = Label(vid)
     my_vid.pack()
     thread = threading.Thread(target=display_video, args=(my_vid,))
     thread.start()
-              
+
 main_f()
 window.mainloop()
