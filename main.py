@@ -31,6 +31,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 
 window=Tk()
+window.attributes('-fullscreen', True)
 window.title('CCTV Owner')
 window.geometry("1920x1080")
 window.iconbitmap('D:\Faculdade\Projeto Artistico\Face Detection\logo.ico')
@@ -86,7 +87,7 @@ def delete_command():
         else:
             messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja remover.')
     except NameError:
-        messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja remover.')
+        messagebox.showerror('CCTV Owner','Contacte o fornecedor do sistema.')
     
 def gosto():
     try:
@@ -171,6 +172,9 @@ def searchdata():
 def reset():
     show()  
 
+def naoFechar():
+    messagebox.showwarning('CCTV Owner','Não estrague o projeto dos outros.')
+
 # MOUSE EVENT VIDEO
 #def mouseevent(event, x, y, flags, param):
     #if event == cv2.EVENT_LBUTTONDOWN:
@@ -196,7 +200,7 @@ Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
 entry3 = Entry(window, textvariable=idade_text)
 entry3.place(relx=0.84,rely=0.65, anchor="nw")
 
-pontos_text=StringVar()
+pontos_text=IntVar()
 id_match_text=IntVar()
 
 Button(inf, text="Adicionar Info", command=edit_command).place(relx=0.5,rely=0.55, anchor="center")
@@ -313,6 +317,8 @@ def main_f():
     def display_video(label):
         while(video.isOpened()):
             frame, image = video.read()
+            
+            #small_frame = cv2.resize(image, (0, 0), fx=0.25, fy=0.25)
 
             if frame == True:
 
@@ -342,7 +348,6 @@ def main_f():
                         know_faces.append(face_encoding)
                         os.mkdir(f"{KNOWN_FACES_DIR}\\{match}")
                         pickle.dump(face_encoding, open(f"{KNOWN_FACES_DIR}\\{match}\\{match}-{int(time.time())}.pkl", "wb"))
-                        pickle.dump(face_encoding, open(f"{KNOWN_FACES_DIR}\\{match}\\{match}-{int(time.time())}.csv", "wb"))
                                 
                     top_left = (face_location[3], face_location[0])
                     bottom_right = (face_location[1], face_location[2])
@@ -380,5 +385,6 @@ def main_f():
     thread = threading.Thread(target=display_video, args=(my_vid,))
     thread.start()
 
+window.protocol("WM_DELETE_WINDOW", naoFechar)
 main_f()
 window.mainloop()

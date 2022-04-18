@@ -15,7 +15,6 @@ def insert(nome,apelido,idade, id):
     conn.close()
     view()
 
-
 def getNameFromID(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
@@ -78,7 +77,8 @@ def search(nome="",apelido="",pontos="",idade="",crime="",id_match=""):
 def delete(id):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("DELETE FROM cctv where id=?",(id,))
+    #cur.execute("DELETE FROM cctv where id=?",(id,))
+    cur.execute("UPDATE cctv SET nome= 'Desconhecido', apelido= 'Desconhecido', idade= 'Desconhecido' WHERE id=?",(id, ))
     conn.commit()
     conn.close()
 
@@ -86,6 +86,18 @@ def update(id,nome,apelido,idade):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     cur.execute("UPDATE cctv SET nome=? ,apelido=? , idade=? where id=?",(nome,apelido,idade,id))
+    conn.commit()
+    conn.close()
+
+def read_file(filename):
+    with open(filename, 'rb') as f:
+        photo = f.read()
+    return photo
+    
+def updateFace(face, id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE cctv SET face=? where id_match=?",(face, id_match, ))
     conn.commit()
     conn.close()
 
