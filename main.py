@@ -14,8 +14,6 @@ import time
 import face_recognition #opencv
 import database as db
 import sqlite3
-
-import mediapipe as mp
 import time
 
 #====================================== DEFINES =====================================#
@@ -25,10 +23,6 @@ TOLERANCE = 0.6 #valor maior = mais preciso
 FRAME_THICKNESS = 3 #linha verde
 FONT_THICKNESS = 2 #font
 MODEL = "hog" #cnn
-
-mp_face_detection = mp.solutions.face_detection
-mp_drawing = mp.solutions.drawing_utils
-
 
 window=Tk()
 window.attributes('-fullscreen', True)
@@ -270,10 +264,12 @@ show()
 
 user = LabelFrame(window)
 user.place(relx=0.7,rely=0, anchor="nw", relwidth=0.3,relheight=0.5)
-
-#corrigir textvariable dps
 Label(user, text="Info Cidadão", font=f1).place(relx=0.55, rely=0.05, anchor="center")
-Label(user, text="FOTO", font=f1).place(relx=0.55, rely=0.3, anchor="center")
+
+
+#Label(user, text="FOTO",textvariable =foto_, font=f1).place(relx=0.55, rely=0.3, anchor="center")
+
+
 Label(user, text="Nome", textvariable = nome_text, font=f1).place(relx=0.55, rely=0.5, anchor="center")
 Label(user, text="Apelido: ",textvariable=apelido_text, font=f1).place(relx=0.55, rely=0.6, anchor="center")
 Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.55, rely=0.7, anchor="center")
@@ -311,7 +307,6 @@ def main_f():
     else:
         next_id = 1
 
-
     video = cv2.VideoCapture(0)
 
     def display_video(label):
@@ -340,7 +335,6 @@ def main_f():
                         match = str(next_id)
                         next_id += 1
                         
-
                         if db.matchExist(match) != 1:
                             db.insertMatch(match)
                         

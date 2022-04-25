@@ -7,7 +7,7 @@ def connect():
     conn.commit()
     conn.close()
     
-def insert(nome,apelido,idade, id):
+def insert(nome,apelido,idade,id):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     cur.execute("UPDATE cctv SET nome=?, apelido=?, idade=? WHERE id=?",(nome, apelido, idade, id, ))
@@ -19,6 +19,14 @@ def getNameFromID(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     cur.execute('SELECT nome FROM cctv WHERE id_match = ?', (id_match, ))
+    data = cur.fetchone()[0]
+    conn.close()
+    return data
+
+def getAgeFromID(id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute('SELECT idade FROM cctv WHERE id_match = ?', (id_match, ))
     data = cur.fetchone()[0]
     conn.close()
     return data
@@ -100,5 +108,17 @@ def updateFace(face, id_match):
     cur.execute("UPDATE cctv SET face=? where id_match=?",(face, id_match, ))
     conn.commit()
     conn.close()
+
+def getFaceFromID(id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute('SELECT face FROM cctv WHERE id_match = ?', (id_match, ))
+    data = cur.fetchone()[0]
+    conn.close()
+    return data
+
+def convertFaceCodeToImage(face, path):
+    with open(path, 'wb') as file:
+        file.write(face)
 
 connect()

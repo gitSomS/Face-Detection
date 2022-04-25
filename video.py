@@ -3,8 +3,8 @@ from tkinter import *
 from tkinter import messagebox
 import tkinter as tk
 from PIL import Image, ImageTk
-import cv2 #opencv
-import face_recognition #opencv
+import cv2
+import face_recognition
 import os
 import pickle
 import time  #teste reduzir fps vídeo
@@ -23,24 +23,25 @@ new_path ='D:/Faculdade/Projeto Artistico/Face Detection/rostos/_'
 #C:\Users\SomS\Desktop\Rostos
 
 window = Tk()
-
-#window.minsize(height=1080,width=1920)
-#window.geometry("1920x1080")
 panel = Label(window)
 panel.grid(row=0,column=2)
+
+#====================================== FUNÇÕES =====================================#
 
 def naoFechar():
     messagebox.showwarning('CCTV Owner','Não estrague o projeto dos outros.')
 
-def save(img, name, bbox, width=180, height=227):
+def save(match, img, name, bbox, width=180, height=227):
     x,y,w,h = bbox
     imgCrop = img [y:h, x: w]
     imgCrop = cv2.resize(imgCrop, (width, height))
     cv2.imwrite(name+".jpg", imgCrop)
+    photo = db.read_file(name+".jpg")
+    db.updateFace(photo, match)
 
 #====================================== VÍDEO =====================================#
 
-video = cv2.VideoCapture(0) #nome do video ou link stream |  #Tela Cheia?
+video = cv2.VideoCapture(0) #nome do video ou link stream
 print("Carregando...") 
 
 know_faces = []
@@ -57,19 +58,14 @@ if len(know_names) > 0:
 else:
     next_id = 0
 
-#Loop for video stream
 while True: 
-    #video.set(cv2.CAP_PROP_FPS,10) PARA WEBCAM/LIVE
-    #cv2.waitKey(100)
     stream = cv2.waitKey(1)   #Load video every 1ms and to detect user entered key
-
-    frame, image = video.read()
-    
+    frame, image = video.read()  
     image = cv2.resize(image, (720, 480))
 
     locations = face_recognition.face_locations(image, model=MODEL)
     encodings = face_recognition.face_encodings(image, locations)
-  
+      
     for face_encoding, face_location in zip(encodings, locations):
         results = face_recognition.compare_faces(know_faces, face_encoding, TOLERANCE)
         match = None
@@ -80,9 +76,8 @@ while True:
             
             if db.matchExist(match) != 1:
                 db.insertMatch(match)
-            
-                #save(image,new_path+str(encodings),(face_location[3], face_location[2],face_location[1], face_location[2]))
-
+                y1, x2, y2, x1 = face_location[0], face_location[1], face_location[2], face_location[3]
+                save(match, image, new_path + str(match), (x1, y1, x2, y2))
 
         else: # new id
             match = str(next_id)
@@ -94,17 +89,10 @@ while True:
             pickle.dump(face_encoding, open(f"{KNOWN_FACES_DIR}\\{match}\\{match}-{int(time.time())}.pkl", "wb"))
             pickle.dump(face_encoding, open(f"{KNOWN_FACES_DIR}\\{match}\\{match}-{int(time.time())}.csv", "wb"))
             
-            y1, x2, y2, x1 = face_location[0], face_location[1], face_location[2], face_location[3]
-            save(image, new_path + match, (x1, y1, x2, y2))
-            photo = db.read_file(new_path + match + ".jpg")
-
-            #db.updateFace(photo, match)
-            print(photo)
-            #print(match)
-            
-            #save(image,new_path,(face_location[3], face_location[2],face_location[1], face_location[2]))
-            #save(image,new_path+str(encodings),(x1-fit,y1-fit,x2+fit,y2+fit))
-
+            if db.matchExist(match) != 1:
+                db.insertMatch(match)
+                y1, x2, y2, x1 = face_location[0], face_location[1], face_location[2], face_location[3]
+                save(match, image, new_path + str(match), (x1, y1, x2, y2))
 
 #====================================== DESIGN VÍDEO - GREEN SQUARE =====================================#
 
@@ -136,4 +124,3 @@ while True:
         break               
 
 video.release()
-#cv2.destroyAllWindows()
