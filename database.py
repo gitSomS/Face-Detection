@@ -3,14 +3,14 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT DEFAULT 'Desconhecido', idade INTEGER DEFAULT 'Desconhecido', pontos INTEGER DEFAULT '1000', crime TEXT DEFAULT 'Nenhum', id_match INTEGER, face BLOB)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT DEFAULT 'Desconhecido', idade INTEGER DEFAULT 'Desconhecido', pontos INTEGER DEFAULT '1000', obs TEXT DEFAULT 'Nenhum', id_match INTEGER, face BLOB)")
     conn.commit()
     conn.close()
     
-def insert(nome,apelido,idade,id):
+def insert(nome,apelido,idade,obs,id):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("UPDATE cctv SET nome=?, apelido=?, idade=? WHERE id=?",(nome, apelido, idade, id, ))
+    cur.execute("UPDATE cctv SET nome=?, apelido=?, idade=?, obs=? WHERE id=?",(nome, apelido, idade, obs, id, ))
     conn.commit()
     conn.close()
     view()
@@ -27,6 +27,14 @@ def getAgeFromID(id_match):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
     cur.execute('SELECT idade FROM cctv WHERE id_match = ?', (id_match, ))
+    data = cur.fetchone()[0]
+    conn.close()
+    return data
+
+def getObsFromID(id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute('SELECT obs FROM cctv WHERE id_match = ?', (id_match, ))
     data = cur.fetchone()[0]
     conn.close()
     return data
@@ -74,10 +82,10 @@ def view():
     conn.close()
     return row
 
-def search(nome="",apelido="",pontos="",idade="",crime="",id_match=""):
+def search(nome="",apelido="",pontos="",idade="",obs="",id_match=""):
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM cctv WHERE nome=? OR apelido=? OR idade=? OR pontos=? OR crime=? OR id_match=?",(nome,apelido,idade,pontos,crime,id_match))
+    cur.execute("SELECT * FROM cctv WHERE nome=? OR apelido=? OR idade=? OR pontos=? OR obs=? OR id_match=?",(nome,apelido,idade,pontos,obs,id_match))
     row = cur.fetchall()
     conn.close()
     return row

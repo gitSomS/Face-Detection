@@ -46,7 +46,9 @@ def get_selected_row(event):
     apelido_text.set(index2[2])
     idade_text.set(index2[3])
     pontos_text.set(index2[4])
-    id_match_text.set(index2[5]) 
+    obs_text.set(index2[5]) 
+    id_match_text.set(index2[6]) 
+
 
 def view_command():
     list1.delete(0,END)
@@ -55,13 +57,13 @@ def view_command():
 
 def search_command():
     list1.delete(0,END)
-    for row in database.search(nome_text.get(),apelido_text.get(),idade_text.get(),pontos_text.get(),crime_text.get(),id_match_text.get()):
+    for row in database.search(nome_text.get(),apelido_text.get(),idade_text.get(),pontos_text.get(),obs_text.get(),id_match_text.get()):
         list1.insert(END,row)
 
 def edit_command():
     try:
         if selected_tuple:
-            database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),selected_tuple)
+            database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),obs_text.get(),selected_tuple)
             #list1.insert(nome_text.get(),apelido_text.get(),idade_text.get(),selected_tuple)
             show()
             messagebox.showinfo("CCTV Owner", "Informação editada com sucesso!")
@@ -182,17 +184,22 @@ inf.place(relx=0.7,rely=0.5, anchor="nw", relwidth=0.3,relheight=0.5)
 nome_text=StringVar()
 Label(inf, text="Nome").place(relx=0.35,rely=0.1, anchor="nw")
 entry1 = Entry(window, textvariable=nome_text)
-entry1.place(relx=0.84,rely=0.55, anchor="nw")
+entry1.place(relx=0.85,rely=0.55, anchor="nw")
 
 apelido_text=StringVar()
 Label(inf, text="Apelido").place(relx=0.35,rely=0.2, anchor="nw")
 entry2 = Entry(window, textvariable=apelido_text)
-entry2.place(relx=0.84,rely=0.6, anchor="nw")
+entry2.place(relx=0.85,rely=0.6, anchor="nw")
 
 idade_text=StringVar()
 Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
 entry3 = Entry(window, textvariable=idade_text)
-entry3.place(relx=0.84,rely=0.65, anchor="nw")
+entry3.place(relx=0.85,rely=0.65, anchor="nw")
+
+obs_text=StringVar()
+Label(inf, text="Observações").place(relx=0.35,rely=0.4, anchor="nw")
+entry3 = Entry(window, textvariable=obs_text)
+entry3.place(relx=0.85,rely=0.7, anchor="nw")
 
 pontos_text=IntVar()
 id_match_text=IntVar()
@@ -270,10 +277,12 @@ Label(user, text="Info Cidadão", font=f1).place(relx=0.55, rely=0.05, anchor="c
 #Label(user, text="FOTO",textvariable =foto_, font=f1).place(relx=0.55, rely=0.3, anchor="center")
 
 
-Label(user, text="Nome", textvariable = nome_text, font=f1).place(relx=0.55, rely=0.5, anchor="center")
-Label(user, text="Apelido: ",textvariable=apelido_text, font=f1).place(relx=0.55, rely=0.6, anchor="center")
-Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.55, rely=0.7, anchor="center")
-Label(user, text="Pontos:",textvariable=pontos_text, font=f1).place(relx=0.55, rely=0.8, anchor="center")
+Label(user, text="Nome", textvariable = nome_text, font=f1).place(relx=0.55, rely=0.4, anchor="center")
+Label(user, text="Apelido: ",textvariable=apelido_text, font=f1).place(relx=0.55, rely=0.5, anchor="center")
+Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.55, rely=0.6, anchor="center")
+Label(user, text="Pontos:",textvariable=pontos_text, font=f1).place(relx=0.55, rely=0.7, anchor="center")
+Label(user, text="Observações:",textvariable=obs_text, font=f1).place(relx=0.55, rely=0.8, anchor="center")
+
    
 #====================================== CONFIG VIDEO =====================================#
 
@@ -350,16 +359,21 @@ def main_f():
                 
                     cv2.rectangle(image, (face_location[3]+350, face_location[2]-200), (face_location[1]+10, face_location[2]-170), (82,82,82), cv2.FILLED)
                     cv2.rectangle(image, (face_location[3]+350, face_location[2]-160), (face_location[1]+10, face_location[2]-130), (82,82,82), cv2.FILLED)
-                    cv2.rectangle(image, (face_location[3]+350, face_location[2]-110), (face_location[1]+10, face_location[2]-80), (82,82,82), cv2.FILLED)
-                    cv2.rectangle(image, (face_location[3]+350, face_location[2]-60), (face_location[1]+10, face_location[2]-30), (82,82,82), cv2.FILLED)
+                    cv2.rectangle(image, (face_location[3]+350, face_location[2]-120), (face_location[1]+10, face_location[2]-90), (82,82,82), cv2.FILLED)
+                    cv2.rectangle(image, (face_location[3]+350, face_location[2]-80), (face_location[1]+10, face_location[2]-50), (82,82,82), cv2.FILLED)
+                    cv2.rectangle(image, (face_location[3]+350, face_location[2]-40), (face_location[1]+10, face_location[2]-10), (82,82,82), cv2.FILLED)
+
 
                     nomecidadao = db.getNameFromID(match)
                     pontoscidadao = db.getPointsFromID(match)
-
-                    cv2.putText(image, "Cidadao {}".format(match), (face_location[1]+20, face_location[2]-180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
-                    cv2.putText(image, "Nome {}".format(nomecidadao), (face_location[1]+20, face_location[2]-140), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
-                    cv2.putText(image, "Pontos {}".format(pontoscidadao), (face_location[1]+20, face_location[2]-90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)      
-                    cv2.putText(image, "Mais Info", (face_location[1]+20, face_location[2]-40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
+                    idadecidadao = db.getAgeFromID(match)
+                    obscidadao = db.getObsFromID(match)
+                    
+                    cv2.putText(image, "Cidadao: {}".format(match), (face_location[1]+20, face_location[2]-180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
+                    cv2.putText(image, "Nome: {}".format(nomecidadao), (face_location[1]+20, face_location[2]-140), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)
+                    cv2.putText(image, "Idade: {}".format(idadecidadao), (face_location[1]+20, face_location[2]-100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)                    
+                    cv2.putText(image, "Pontos: {}".format(pontoscidadao), (face_location[1]+20, face_location[2]-60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)      
+                    cv2.putText(image, "{}".format(obscidadao), (face_location[1]+20, face_location[2]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), FONT_THICKNESS)      
 
                 #for image in video.iter_data(): # convert array into image
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
