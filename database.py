@@ -3,7 +3,7 @@ import sqlite3
 def connect():
     conn = sqlite3.connect("cctv.db")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT DEFAULT 'Desconhecido', idade INTEGER DEFAULT 'Desconhecido', pontos INTEGER DEFAULT '1000', obs TEXT DEFAULT 'Nenhum', id_match INTEGER, face BLOB)")
+    cur.execute("CREATE TABLE IF NOT EXISTs cctv (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT DEFAULT 'Desconhecido', apelido TEXT DEFAULT 'Desconhecido', idade INTEGER DEFAULT 'Desconhecido', pontos INTEGER DEFAULT '1000', obs TEXT DEFAULT 'Nenhum', estado INTEGER DEFAULT '0', id_match INTEGER, face BLOB)")
     conn.commit()
     conn.close()
     
@@ -128,5 +128,20 @@ def getFaceFromID(id_match):
 def convertFaceCodeToImage(face, path):
     with open(path, 'wb') as file:
         file.write(face)
+
+def getState(id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute('SELECT estado FROM cctv WHERE id_match = ?', (id_match, ))
+    data = cur.fetchone()[0]
+    conn.close()
+    return data
+
+def setState(state, id_match):
+    conn = sqlite3.connect("cctv.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE cctv SET estado=? where id_match=?",(state, id_match, ))
+    conn.commit()
+    conn.close()
 
 connect()
