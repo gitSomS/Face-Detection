@@ -16,6 +16,7 @@ import face_recognition
 import database as db
 import sqlite3
 import time
+import re
 
 #====================================== DEFINES =====================================#
 
@@ -26,13 +27,18 @@ FONT_THICKNESS = 2 #font
 MODEL = "hog" #cnn
 
 window=Tk()
-window.attributes('-fullscreen', True)
+#window.attributes('-fullscreen', True)
 window.title('CCTV Owner')
 window.geometry("1920x1080")
 window.iconbitmap(default="logo.ico")
 main = Frame(window)
+
+style = ttk.Style()
+style.theme_use('xpnative')
+
 f1 = ("Arial", 20)
-f2 = ("Arial", 10)
+f2 = ("Levi Windows", 10)
+f3 = ("Levi Windows", 10)
 
 #====================================== FUNÇÕES =====================================#
 
@@ -62,14 +68,22 @@ def search_command():
 
 def edit_command():
     try:
-        if selected_tuple and idade_text.get() > 0 and getState(selected_tuple) == 0 :
-            database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),obs_text.get(),selected_tuple)
-            show()
-            messagebox.showinfo("CCTV Owner", "Informação editada com sucesso!")
+        if selected_tuple:
+            if db.getState(selected_tuple) == 0:
+                if int(idade_text.get()) > 0:
+                    isNumber = re.search("[0-9]", str(variavel_idade.get()))
+                    if isNumber:
+                        database.insert(nome_text.get(),apelido_text.get(),idade_text.get(),obs_text.get(),selected_tuple)
+                        show()
+                        messagebox.showinfo("CCTV Owner", "Informação editada com sucesso!")
+                    else:
+                        messagebox.showwarning('CCTV Owner','Apenas insira números.')
+                else:
+                    messagebox.showwarning('CCTV Owner','Insira números maiores que 0.')
+            else:
+                messagebox.showwarning('CCTV Owner','Não é possivel editar este cidadão.')
         else:
-            messagebox.showwarning('CCTV Owner','Insira apenas números positivos na idade.')
-        else:
-            messagebox.showwarning('CCTV Owner','Insira apenas números positivos na idade.')    
+            messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
     except NameError:
         messagebox.showwarning('CCTV Owner','Selecione o cidadão que deseja editar.')
 
@@ -210,13 +224,13 @@ Label(inf, text="Apelido").place(relx=0.35,rely=0.2, anchor="nw")
 entry2 = Entry(window, textvariable=apelido_text)
 entry2.place(relx=0.85,rely=0.6, anchor="nw")
 
-idade_text=IntVar() # CORRIGIR - INFO PARA INSERIR NUMEROS
+idade_text=IntVar()
 Label(inf, text="Idade").place(relx=0.35,rely=0.3, anchor="nw")
 entry3 = Entry(window, textvariable=idade_text)
 entry3.place(relx=0.85,rely=0.65, anchor="nw")
 
 obs_text=StringVar()
-Label(inf, text="Observações").place(relx=0.35,rely=0.4, anchor="nw")
+Label(inf, text="Observações", font=f2).place(relx=0.35,rely=0.4, anchor="nw")
 entry4 = Entry(window, textvariable=obs_text)
 entry4.place(relx=0.85,rely=0.7, anchor="nw")
 
@@ -268,13 +282,13 @@ list1.bind('<ButtonRelease-1>', get_selected_row)
 Button(inf, text="Atualizar", command=reset).place(relx=0.6,rely=0.25, anchor="center")  
 Button(inf, text="Bloquear Cidadão",command=block_command).place(relx=0.2,rely=0.25, anchor="center")
 
-ws_lbl = Label(inf, text = "Nome", font=('calibri', 12, 'normal'))
+ws_lbl = ttk.Label(inf, text = "Nome", font=('Levi Windows', 12, 'normal'))
 ws_lbl.place(relx=0.1,rely=0.45)
-ws_ent = Entry(inf,  width = 20, font=('Arial', 15, 'bold'))
+ws_ent = Entry(inf,  width = 20, font=('Levi Windows', 15, 'bold'))
 ws_ent.place(relx=0.2,rely=0.45)
-ws_btn1 = Button(inf, text = 'Procurar', command = searchdata)
+ws_btn1 = ttk.Button(inf, text = 'Procurar', command = searchdata)
 ws_btn1.place(relx=0.8,rely=0.49, anchor="center")
-ws_btn2 = Button(inf, text = 'Reset', command = reset)
+ws_btn2 = ttk.Button(inf, text = 'Reset', command = reset)
 ws_btn2.place(relx=0.8,rely=0.6, anchor="center")
 
 show()
@@ -292,7 +306,7 @@ user = LabelFrame(window)
 user.place(relx=0.7,rely=0, anchor="nw", relwidth=0.3,relheight=0.5)
 Label(user, text="Info Cidadão", font=f1).place(relx=0.55, rely=0.05, anchor="center")
 
-Label(user, text="Nome", textvariable = nome_text, font=f1).place(relx=0.55, rely=0.4, anchor="center")
+Label(user, text="Nome", textvariable=nome_text, font=f1).place(relx=0.55, rely=0.4, anchor="center")
 Label(user, text="Apelido: ",textvariable=apelido_text, font=f1).place(relx=0.55, rely=0.5, anchor="center")
 Label(user, text="Idade:",textvariable=idade_text, font=f1).place(relx=0.55, rely=0.6, anchor="center")
 Label(user, text="Pontos:",textvariable=pontos_text, font=f1).place(relx=0.55, rely=0.7, anchor="center")
@@ -300,7 +314,7 @@ Label(user, text="Observações:",textvariable=obs_text, font=f1).place(relx=0.5
    
 #====================================== CONFIG VIDEO =====================================#
 
-Button(main,text="Em Construção",font=f1, relief=SOLID).place(relx=0.25, rely=0.7, anchor="nw", relwidth=0.45, relheight=0.3) 
+#Button(main,text="Em Construção",font=f1, relief=SOLID).place(relx=0.25, rely=0.7, anchor="nw", relwidth=0.45, relheight=0.3) 
 
 #====================================== DEFINES VIDEO =====================================#
 
